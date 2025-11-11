@@ -58,7 +58,7 @@ public class ResetCommand {
 	}
 
 	// copies into new dir, the changes that can be retained and removes the rest
-	// todo: need to handle properly with commitid directory
+	// todo:  reflects in commits.logs only, need to handle properly with commit id marked directories to copy to files with a different version
 	private void deleteResettableFiles(Path gitterPath, List<String> lines) {
 		// todo: can move paths to a utils method
 		Path repoDir = gitterPath.resolve("repo");
