@@ -38,8 +38,8 @@ public class Main {
 //		commandExecutor.execute("gitter add build.gradle");
 //		commandExecutor.execute("gitter commit -m \"modify src test\" ");
 //		commandExecutor.execute("gitter add src");
-		commandExecutor.execute("gitter add build.gradle");
-		commandExecutor.execute("gitter commit -m \"modify build.gradle test112\" ");
+		commandExecutor.execute("gitter add src");
+		commandExecutor.execute("gitter commit -m \"modify build.gradle test\" ");
 		commandExecutor.execute("gitter reset HEAD~1");
 	}
 }

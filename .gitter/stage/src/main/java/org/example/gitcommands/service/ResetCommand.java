@@ -58,7 +58,6 @@ public class ResetCommand {
 	}
 
 	// copies into new dir, the changes that can be retained and removes the rest
-	// todo: need to handle properly with commitid directory
 	private void deleteResettableFiles(Path gitterPath, List<String> lines) {
 		// todo: can move paths to a utils method
 		Path repoDir = gitterPath.resolve("repo");
