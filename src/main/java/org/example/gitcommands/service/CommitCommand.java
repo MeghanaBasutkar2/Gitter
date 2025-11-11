@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.Comparator;
 import java.util.List;
 
 public class CommitCommand {
@@ -59,8 +60,23 @@ public class CommitCommand {
 				}
 			}
 			formatAndStoreToCommitsFile(gitterDir, commitMsg);
+			clearStage(stagePath);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
+		}
+	}
+
+	private void clearStage(Path stagePath) {
+		if (Files.exists(stagePath)) {
+			try {
+				Files.walk(stagePath)
+						.sorted(Comparator.reverseOrder())
+						.map(Path::toFile)
+						.forEach(File::delete);
+			} catch (IOException e) {
+				System.out.println("Error while clearing stage files");
+			}
+
 		}
 	}
 

@@ -38,25 +38,25 @@ public class AddCommand {
 			}
 
 			String[] splitCommand = command.trim().split("\\s+");
-
 			String splitStr = splitCommand[2].trim();
-			// todo: create separate methods for each case
 
 			// gitter add . case:
-			addAllFiles(splitStr, currentDir, stagePath, gitterDir);
+			if (splitStr.equals(".")) {
+				addAllFiles(splitStr, currentDir, stagePath, gitterDir);
+			}
 
-			// gitter add *.py or *.bat case:
-			if (splitStr.startsWith("*.bat")) {
+			// gitter add *.py or *.bat case:--
+			else if (splitStr.startsWith("*.bat")) {
 				String ext = splitStr.substring(1);
 				addAllExtFiles(ext, splitStr, currentDir, stagePath);
+			} else {
+				// git add <single file> case:
+				Path source = currentDir.resolve(splitStr);
+				if (!Files.exists(source)) {
+					System.out.println("File not found at: " + source.toAbsolutePath());
+				}
+				addSingleFile(splitStr, stagePath, source);
 			}
-
-			// git add <single file> case:
-			Path source = currentDir.resolve(splitStr);
-			if (!Files.exists(source)) {
-				System.out.println("File not found at: " + source.toAbsolutePath());
-			}
-			addSingleFile(splitStr, stagePath, source);
 		} catch (IOException e) {
 			System.out.println(GitterConstants.FILE_ADD_ERR);
 		}
@@ -67,21 +67,20 @@ public class AddCommand {
 
 		try {
 			if (Files.isDirectory(source)) {
-				try (java.util.stream.Stream<Path> stream = Files.walk(source)) {
-					stream.filter(filePath -> Files.isRegularFile(filePath))
-							.forEach(p -> {
-								Path rel = source.relativize(p);
-								Path dest = destination.resolve(rel);
-								try {
-									Path parent = dest.getParent();
-									if (parent != null && !Files.exists(parent)) {
-										Files.createDirectories(parent);
-									}
-									Files.copy(p, dest, StandardCopyOption.REPLACE_EXISTING);
-								} catch (IOException ex) {
-									System.out.println("Warning: could not add " + p + " -> " + ex.getMessage());
-								}
-							});
+				for (Path p : Files.walk(source).toList()) {
+					if (Files.isRegularFile(p) && !p.toAbsolutePath().toString().contains(".gitter/stage")) {
+						Path rel = source.relativize(p);
+						Path dest = destination.resolve(rel);
+						Path parent = dest.getParent();
+						if (parent != null && !Files.exists(parent)) {
+							Files.createDirectories(parent);
+						}
+						try {
+							Files.copy(p, dest, StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException ex) {
+							System.out.println("Error adding file");
+						}
+					}
 				}
 				return;
 			}
@@ -93,9 +92,37 @@ public class AddCommand {
 			Files.copy(source, destination, StandardCopyOption.REPLACE_EXISTING);
 
 		} catch (IOException e) {
-			throw new RuntimeException("Error adding file/directory: " + e.getMessage(), e);
+			// test123
+			System.out.println(e.getMessage());
 		}
 	}
+
+	private void addAllFiles(String splitStr, Path currentDir, Path stagePath, Path gitterDir) {
+		if (splitStr.equals(".")) {
+			try {
+				Files.walk(currentDir)
+						.filter(p -> Files.isRegularFile(p) &&
+								!p.startsWith(gitterDir) &&
+								!p.toAbsolutePath().toString().contains(".gitter/stage"))
+						.forEach(p -> {
+							try {
+								Path rel = currentDir.relativize(p);
+								Path destination = stagePath.resolve(rel);
+								Path parent = destination.getParent();
+								if (parent != null && !Files.exists(parent)) {
+									Files.createDirectories(parent);
+								}
+								Files.copy(p, destination, StandardCopyOption.REPLACE_EXISTING);
+							} catch (IOException ex) {
+								System.out.println("Something went wrong while staging all files");
+							}
+						});
+			} catch (IOException e) {
+				System.out.println("Error while adding all files: " + e.getMessage());
+			}
+		}
+	}
+
 
 	private void addAllExtFiles(String ext, String splitStr, Path currentDir, Path stagePath) {
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(currentDir, "*" + ext)) {
@@ -107,29 +134,4 @@ public class AddCommand {
 			System.out.println("Error while adding wildcard files: " + ex.getMessage());
 		}
 	}
-
-	private void addAllFiles(String splitStr, Path currentDir, Path stagePath, Path gitterDir) {
-		if (splitStr.equals(".")) {
-			try {
-				Files.walk(currentDir)
-						.filter(p -> !p.startsWith(gitterDir))
-						.forEach(p -> {
-							try {
-								Path rel = currentDir.relativize(p);
-								Path destination = stagePath.resolve(rel);
-								Path parent = destination.getParent();
-								if (parent != null && !Files.exists(parent)) {
-									Files.createDirectories(parent);
-								}
-								Files.copy(p, destination, StandardCopyOption.REPLACE_EXISTING);
-							} catch (IOException ex) {
-								System.out.println("Warning: could not add " + p + " -> " + ex.getMessage());
-							}
-						});
-			} catch (IOException e) {
-				System.out.println("Error while adding all files: " + e.getMessage());
-			}
-		}
-	}
-
 }

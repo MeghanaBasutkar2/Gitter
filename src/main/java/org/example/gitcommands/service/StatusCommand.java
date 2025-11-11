@@ -115,23 +115,20 @@ public class StatusCommand {
 
 	private List<String> getUntrackedFiles(Path currentDir, Path stagePath) {
 		List<String> untracked = new ArrayList<>();
+		List<String> stagedFiles = getChangesToBeCommitted(stagePath);
 
-		try {
-			// fetch staged files and add to a list
-			List<String> stagedFiles = getChangesToBeCommitted(stagePath);
-
-			// files in current dir
-			File[] allFiles = currentDir.toFile().listFiles(file -> !file.getName().equals(".gitter"));
-
-			if (allFiles != null) {
-				for (File file : allFiles) {
-					if (!stagedFiles.contains(file.getName())) {
-						untracked.add(file.getName());
+		File[] allFiles = currentDir.toFile().listFiles(file -> !file.getName().equals(".gitter"));
+		if (allFiles != null) {
+			for (File file : allFiles) {
+				String name = file.getName();
+				if (!stagedFiles.contains(name)) {
+					if (file.isDirectory()) {
+						untracked.add(name); // only top-level directory name
+					} else {
+						untracked.add(name); // regular file in root
 					}
 				}
 			}
-		} catch (Exception e) {
-			System.out.println("Error in getting untracked files: " + e.getMessage());
 		}
 		return untracked;
 	}

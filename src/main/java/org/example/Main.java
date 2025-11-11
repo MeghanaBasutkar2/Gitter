@@ -20,10 +20,13 @@ public class Main {
 //		commandExecutor.execute("gitter checkout feature");
 //		commandExecutor.execute("gitter add .");
 //		commandExecutor.execute("gitter add *.bat"); // instead of py files
+//		commandExecutor.execute("gitter commit -m \" bat file\" ");
 //		commandExecutor.execute("gitter add build.gradle");
+//		commandExecutor.execute("gitter add src");
 //		commandExecutor.execute("gitter status");
 //		commandExecutor.execute("gitter add settings.gradle");
 //		commandExecutor.execute("gitter commit -m \" modify gradle file\" ");
+//		commandExecutor.execute("gitter add build.gradle");
 //		commandExecutor.execute("gitter commit -m \"modify file test 2\" ");
 //		commandExecutor.execute("gitter commit -m \"test line seperator commit format\" ");
 //		commandExecutor.execute("gitter commit -m \"test line seperator commit format 2\" ");
@@ -34,12 +37,15 @@ public class Main {
 //		commandExecutor.execute("gitter reset HEAD~2");
 //		commandExecutor.execute("gitter commit -m \"latest commit to test head changes\" ");
 //		commandExecutor.execute("gitter commit -m \"latest commit to test head changes 2\" ");
+//		commandExecutor.execute("gitter add .");
+//		commandExecutor.execute("gitter add build.gradle");
+//		commandExecutor.execute("gitter commit -m \"modify all test\" ");
 //		commandExecutor.execute("gitter add src");
 //		commandExecutor.execute("gitter add build.gradle");
-//		commandExecutor.execute("gitter commit -m \"modify src test\" ");
-//		commandExecutor.execute("gitter add src");
-		commandExecutor.execute("gitter add build.gradle");
-		commandExecutor.execute("gitter commit -m \"modify build.gradle test112\" ");
-		commandExecutor.execute("gitter reset HEAD~1");
+//		commandExecutor.execute("gitter commit -m \"modify src,build test11\" ");
+//		commandExecutor.execute("gitter status");
+//		commandExecutor.execute("gitter commit -m \"modify build.gradle test112\" ");
+//		commandExecutor.execute("gitter reset HEAD~1");
+
 	}
 }
