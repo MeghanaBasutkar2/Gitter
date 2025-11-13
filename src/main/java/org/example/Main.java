@@ -38,10 +38,11 @@ public class Main {
 //		commandExecutor.execute("gitter commit -m \"latest commit to test head changes\" ");
 //		commandExecutor.execute("gitter commit -m \"latest commit to test head changes 2\" ");
 //		commandExecutor.execute("gitter add .");
-//		commandExecutor.execute("gitter add build.gradle");
+		commandExecutor.execute("gitter add build.gradle");
+		commandExecutor.execute("gitter add src");
 //		commandExecutor.execute("gitter commit -m \"modify all test\" ");
 //		commandExecutor.execute("gitter add src");
-//		commandExecutor.execute("gitter commit -m \"modify src,build test11\" ");
+		commandExecutor.execute("gitter commit -m \"modify src,build test11\" ");
 //		commandExecutor.execute("gitter add .");
 //		commandExecutor.execute("gitter commit -m \"modify test\" ");
 		commandExecutor.execute("gitter status");
