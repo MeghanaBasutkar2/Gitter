@@ -41,9 +41,10 @@ public class Main {
 //		commandExecutor.execute("gitter add build.gradle");
 //		commandExecutor.execute("gitter commit -m \"modify all test\" ");
 //		commandExecutor.execute("gitter add src");
-//		commandExecutor.execute("gitter add build.gradle");
 //		commandExecutor.execute("gitter commit -m \"modify src,build test11\" ");
-//		commandExecutor.execute("gitter status");
+//		commandExecutor.execute("gitter add .");
+//		commandExecutor.execute("gitter commit -m \"modify test\" ");
+		commandExecutor.execute("gitter status");
 //		commandExecutor.execute("gitter commit -m \"modify build.gradle test112\" ");
 //		commandExecutor.execute("gitter reset HEAD~1");
 

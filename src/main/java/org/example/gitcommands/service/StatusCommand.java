@@ -11,16 +11,13 @@ import com.github.difflib.patch.Patch;
 public class StatusCommand {
 	private static StatusCommand statusCommandInstance;
 
-	private StatusCommand() {
-	}
+	private StatusCommand() {}
 
 	public static StatusCommand getStatusCommandInstance() {
 		if (statusCommandInstance == null) {
 			statusCommandInstance = new StatusCommand();
-			return statusCommandInstance;
-		} else {
-			return statusCommandInstance;
 		}
+		return statusCommandInstance;
 	}
 
 	public void status() {
@@ -29,9 +26,14 @@ public class StatusCommand {
 		Path gitterDir = currentDir.resolve(".gitter");
 		Path stagePath = gitterDir.resolve("stage");
 
-		List<String> untrackedFiles = getUntrackedFiles(currentDir, stagePath); // any file not added
-		List<String> addedChanges = getChangesToBeCommitted(stagePath); // added changes
-		List<String> modifiedFiles = getModifiedFiles(currentDir, stagePath); // not added
+		// any file not added
+		List<String> untrackedFiles = getUntrackedFiles(currentDir, stagePath);
+		// added changes (staged)
+		List<String> addedChanges = getChangesToBeCommitted(stagePath);
+		// changes not staged for commit (modified)
+		List<String> modifiedFiles = getModifiedFiles(currentDir, stagePath);
+
+		addedChanges.removeAll(modifiedFiles);
 
 		try {
 			if (!untrackedFiles.isEmpty()) {
@@ -68,7 +70,6 @@ public class StatusCommand {
 		}
 	}
 
-	// fetch staged files
 	private List<String> getChangesToBeCommitted(Path stagePath) {
 		List<String> staged = new ArrayList<>();
 		if (Files.exists(stagePath)) {
@@ -84,32 +85,57 @@ public class StatusCommand {
 
 	protected List<String> getModifiedFiles(Path currentDir, Path stagePath) {
 		List<String> modified = new ArrayList<>();
+		Path gitterDir = currentDir.resolve(".gitter");
+		Path repoPath = gitterDir.resolve("repo");
 
-		// if no files in the stage path or if the list of files obj is null, return empty list
-		if (!Files.exists(stagePath)) return modified;
+		List<String> stagedNames = new ArrayList<>();
+		if (Files.exists(stagePath)) {
+			File[] stagedArr = stagePath.toFile().listFiles();
+			if (stagedArr != null) {
+				for (File f : stagedArr) stagedNames.add(f.getName());
+			}
+		}
 
-		File[] stagedFiles = stagePath.toFile().listFiles();
-		if (stagedFiles == null) return modified;
+		for (String name : stagedNames) {
+			try {
+				Path stagedFile = stagePath.resolve(name);
+				Path workingFile = currentDir.resolve(name);
+				if (Files.exists(stagedFile) && Files.exists(workingFile) && Files.isRegularFile(workingFile)) {
+					List<String> stagedContent = Files.readAllLines(stagedFile);
+					List<String> workingContent = Files.readAllLines(workingFile);
+					Patch<String> patch = DiffUtils.diff(stagedContent, workingContent);
+					if (!patch.getDeltas().isEmpty()) {
+						if (!modified.contains(name)) modified.add(name);
+					}
+				}
+			} catch (Exception e) {
+				System.out.println("Error comparing staged file: " + name + " -> " + e.getMessage());
+			}
+		}
 
-		try {
-			for (File stagedFile : stagedFiles) {
-				Path filePathInCurrentDir = currentDir.resolve(stagedFile.getName());
-				if (Files.exists(filePathInCurrentDir)) {
-					System.out.println("----stage file path----" + stagedFile.toPath());
-					System.out.println("----corresponding file path in current dir----" +filePathInCurrentDir);
-					List<String> stagedContent = Files.readAllLines(stagedFile.toPath());
-					List<String> currentDirContent = Files.readAllLines(filePathInCurrentDir);
-
-					Patch<String> patch = DiffUtils.diff(stagedContent, currentDirContent);
-
-					if (!patch.getDeltas().isEmpty()) { // diffs found
-						modified.add(stagedFile.getName());
+		if (Files.exists(repoPath)) {
+			File[] repoFiles = repoPath.toFile().listFiles();
+			if (repoFiles != null) {
+				for (File repoFile : repoFiles) {
+					String name = repoFile.getName();
+					if (stagedNames.contains(name)) continue;
+					try {
+						Path workingFile = currentDir.resolve(name);
+						if (Files.exists(repoFile.toPath()) && Files.exists(workingFile) && Files.isRegularFile(workingFile)) {
+							List<String> repoContent = Files.readAllLines(repoFile.toPath());
+							List<String> workingContent = Files.readAllLines(workingFile);
+							Patch<String> patch = DiffUtils.diff(repoContent, workingContent);
+							if (!patch.getDeltas().isEmpty()) {
+								if (!modified.contains(name)) modified.add(name);
+							}
+						}
+					} catch (Exception e) {
+						System.out.println("Error comparing repo file: " + name + " -> " + e.getMessage());
 					}
 				}
 			}
-		} catch (Exception e) {
-			System.out.println("Error in getting modified files: " + e.getMessage());
 		}
+
 		return modified;
 	}
 
@@ -122,11 +148,7 @@ public class StatusCommand {
 			for (File file : allFiles) {
 				String name = file.getName();
 				if (!stagedFiles.contains(name)) {
-					if (file.isDirectory()) {
-						untracked.add(name); // only top-level directory name
-					} else {
-						untracked.add(name); // regular file in root
-					}
+					untracked.add(name);
 				}
 			}
 		}
